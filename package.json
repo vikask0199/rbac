@@ -3,17 +3,20 @@
   "version": "1.0.0",
   "main": "server.ts",
   "scripts": {
-    "start": "nodemon ./src/server.ts"
+    "start": "nodemon ./src/server.ts",
+    "doc-gen": "ts-node ./src/openapi/index.ts && redocly build-docs rbac-microservice.json --output rbac-docs.html"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@redocly/cli": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "pg": "^8.12.0",
     "typeorm": "^0.3.20",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zod-openapi": "^2.19.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

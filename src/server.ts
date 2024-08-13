@@ -7,7 +7,7 @@ import { AppDataSource } from "./config/dbConfig";
 dotenv.config({ path: ".env" });
 const server = http.createServer(app);
 
-const port = 5000;
+const port = 9092;
 process.on("uncaughtException", (error) => {
   process.exit(1);
 });

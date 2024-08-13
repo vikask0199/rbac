@@ -5,7 +5,7 @@ import { createSuperAdminService, deleteSuperAdminService, getAllSuperAdminsServ
 const superAdminSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     primaryEmail: z.string().email(),
-    secondryEmail: z.string().email(),
+    secondaryEmail: z.string().email(),
     password: z.string().min(6, 'Password should be at least 6 characters').optional(),
     isActive: z.boolean().optional(),
 });
@@ -18,7 +18,7 @@ export const createSuperAdminController = async (req: Request, res: Response) =>
 
     try {
         const superAdmin = await createSuperAdminService(parsedData.data);
-        res.status(201).json(superAdmin);
+        res.status(201).json({success: true, message: "Super Admin Created Successfully", data: superAdmin});
     } catch (error:any) {
         res.status(500).json({ message: error.message });
     }

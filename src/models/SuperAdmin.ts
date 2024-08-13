@@ -13,7 +13,7 @@ export class SuperAdmin {
     public primaryEmail!: string;
 
     @Column({ unique: true })
-    public secondryEmail!: string;
+    public secondaryEmail!: string;
 
     @Column({ nullable: true, select: false })
     public password?: string;

@@ -1,7 +1,7 @@
 export interface ISuperAdminRequest {
     name: string;
     primaryEmail: string;
-    secondryEmail: string;
+    secondaryEmail: string;
     password?: string;
     isActive?: boolean;
 }
@@ -9,7 +9,7 @@ export interface ISuperAdminRequest {
 export interface ISuperAdminResponse {
     name: string;
     primaryEmail: string;
-    secondryEmail: string;
+    secondaryEmail: string;
     isActive: boolean;
     role: string;
     createdAt: Date;

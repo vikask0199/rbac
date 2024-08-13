@@ -4,7 +4,7 @@ export const SuperAdminSchema = z.object({
     id: z.number().optional(), 
     name: z.string().default("hello@.com"),
     primaryEmail: z.string().email().default("vikas.kumar"),
-    secondryEmail: z.string().email(),
+    secondaryEmail: z.string().email(),
     password: z.string().optional(),
     isActive: z.boolean().default(false),
     createdAt: z.date().default(new Date()), 

@@ -9,12 +9,26 @@ export const getSuperAdminRepository = async () => {
     return AppDataSource.getRepository(SuperAdmin);
 };
 
+export const checkAnyOneEmailExistIntoDB = async (data: ISuperAdminRequest): Promise<SuperAdmin | null> => {
+    const repository = await getSuperAdminRepository();
+    const result =  await repository.findOne({
+        where: [
+            {primaryEmail: data.primaryEmail},
+            {secondaryEmail: data.secondaryEmail},
+            {primaryEmail: data.secondaryEmail},
+            {secondaryEmail: data.primaryEmail},
+        ]
+    })
+    return result;
+};
+
+
 export const findSuperAdminByEmail = async (email: string): Promise<SuperAdmin | null> => {
     const repository = await getSuperAdminRepository();
     return await repository.findOne({
         where: [
             { primaryEmail: email },
-            { secondryEmail: email },
+            { secondaryEmail: email },
         ]
     });
 };

@@ -19,4 +19,13 @@ export interface ISuperAdminResponse {
 export interface ISuperAdminBasicResponse {
     name: string;
     primaryEmail: string;
+    secondaryEmail: string;
+}
+
+
+
+export interface ISuperAdminUpdateRequest {
+    name?: string;
+    primaryEmail?: string;
+    secondaryEmail?: string
 }

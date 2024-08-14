@@ -33,12 +33,27 @@ export interface IRole {
     createdBy?: string;
     createdAt?: Date;
     updatedAt?: Date;
-    permissions?: string[]; // Array of Permission IDs
+    permissions?: string[]; 
 }
 
 export interface IUpdateRole {
     id: string;
     name?: string;
     createdBy?: string;
-    permissions?: string[]; // Array of Permission IDs
+    permissions?: string[]; 
 }
+
+
+
+
+// export interface CreateRoleDTO {
+//     name: string;
+//     permissions?: string[]; 
+//     createdBy?: string;
+// }
+
+// export interface UpdateRoleDTO {
+//     name?: string;
+//     permissions?: string[]; 
+//     createdBy?: string;
+// }

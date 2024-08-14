@@ -1,78 +1,115 @@
 import { Request, Response } from 'express';
-import { z } from 'zod';
+import { SuperAdminSchema, SuperAdminUpdateSchema } from '../schemas/SuperAdminSchema';
 import { createSuperAdminService, deleteSuperAdminService, getAllSuperAdminsService, getSuperAdminService, updateSuperAdminService } from '../services/SuperAdminService';
+import { ISuperAdminRequest, ISuperAdminUpdateRequest } from '../interfaces/ISuperAdmin';
 
-const superAdminSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    primaryEmail: z.string().email(),
-    secondaryEmail: z.string().email(),
-    password: z.string().min(6, 'Password should be at least 6 characters').optional(),
-    isActive: z.boolean().optional(),
-});
-
-export const createSuperAdminController = async (req: Request, res: Response) => {
-    const parsedData = superAdminSchema.safeParse(req.body);
-    if (!parsedData.success) {
-        return res.status(400).json(parsedData.error.errors);
-    }
-
+export const createSuperAdminController = async (req: Request<{}, {}, ISuperAdminRequest>, res: Response) => {
     try {
+        if(Object.keys(req.body).length === 0){
+            return res.status(400).json({ success: false, message: "Bad Request" });
+        }
+
+        const parsedData = SuperAdminSchema.safeParse(req.body);
+
+        if (!parsedData.success) {
+            return res.status(400).json({
+                success: false,
+                message: "Unprocessable Entity",
+                errors: parsedData.error.errors,
+            });
+        }
         const superAdmin = await createSuperAdminService(parsedData.data);
         res.status(201).json({success: true, message: "Super Admin Created Successfully", data: superAdmin});
     } catch (error:any) {
-        res.status(500).json({ message: error.message });
+        if(error.message === 'exists'){
+            res.status(409).json({success: false, message: "Email already exists" });
+        }else if(error.message === 'something'){
+            res.status(400).json({success: false, message: "Something went wrong" });
+        }
+        else{
+            res.status(500).json({success: false, message: "Internal Server Error or Unexpected error"});
+        }
     }
 };
 
-export const updateSuperAdminController = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const parsedData = superAdminSchema.partial().safeParse(req.body);
-    if (!parsedData.success) {
-        return res.status(400).json(parsedData.error.errors);
-    }
-
+export const updateSuperAdminController = async (req: Request<{id: string}, {}, ISuperAdminUpdateRequest>, res: Response) => {
     try {
-        const updatedSuperAdmin = await updateSuperAdminService(Number(id), parsedData.data);
+        const { id } = req.params;
+        
+        if(Object.keys(req.body).length === 0){
+            return res.status(400).json({ success: false, message: "Bad Request" });
+        }
+
+        const parsedData = SuperAdminUpdateSchema.safeParse(req.body);
+
+        if (!parsedData.success) {
+            return res.status(400).json({
+                success: false,
+                message: "Unprocessable Entity",
+                errors: parsedData.error.errors,
+            });
+        }
+
+        const updatedSuperAdmin = await updateSuperAdminService(id, parsedData.data);
         if (!updatedSuperAdmin) {
-            return res.status(404).json({ message: "SuperAdmin not found" });
+            return res.status(403).json({ message: "Failed to update super admin credentials" });
         }
-        res.status(200).json(updatedSuperAdmin);
+        res.status(200).json({success: true, message:"Record Updated Successfully", data: updatedSuperAdmin});
     } catch (error:any) {
-        res.status(500).json({ message: error.message });
+        if(error.message === 'not found' || error.message === 'invalid'){
+            res.status(404).json({ message: "Super Admin not found" });
+        }
+        else if(error.message === 'No change detected'){
+            res.status(409).json({ message: "No change detected" });
+        }
+        else{
+            res.status(500).json({success: false, message: "Internal Server Error or Unexpected error"});
+        }
     }
 };
 
-export const getSuperAdminController = async (req: Request, res: Response) => {
+
+export const getSuperAdminByIdController = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
-        const superAdmin = await getSuperAdminService(Number(id));
+        const superAdmin = await getSuperAdminService(id);
         if (!superAdmin) {
-            return res.status(404).json({ message: "SuperAdmin not found" });
+            return res.status(404).json({success: false, message: "SuperAdmin not found" });
         }
-        res.status(200).json(superAdmin);
-    } catch (error:any) {
-        res.status(500).json({ message: error.message });
+        res.status(200).json({success: true, data: superAdmin});
+    } catch (error: any) {
+        if(error.message === 'not found' || error.message === 'invalid'){
+            res.status(404).json({ message: "Super Admin not found" });
+        }else{
+            res.status(500).json({success: false, message: "Internal Server Error or Unexpected error"});
+        }
     }
 };
 
-export const getAllSuperAdminsController = async (_: Request, res: Response) => {
+export const getAllSuperAdminsController = async (req: Request, res: Response) => {
     try {
+        console.log("controller")
         const superAdmins = await getAllSuperAdminsService();
-        res.status(200).json(superAdmins);
-    } catch (error:any) {
-        res.status(500).json({ message: error.message });
+        res.status(200).json({success: true, data: superAdmins});
+    } catch (error: any) {
+        res.status(500).json({success: false, message: error.message });
     }
 };
 
 export const deleteSuperAdminController = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-        const success = await deleteSuperAdminService(Number(id));
-        if (!success) {
-            return res.status(404).json({ message: "SuperAdmin not found" });
-        }
-        res.status(200).json({ message: "SuperAdmin deleted successfully" });
-    } catch (error:any) {
-        res.status(500).json({ message: error.message });
-    }
+    res.status(400).json({success: false, message: "This facilty is currently disabled please contact with developer or maintainer" })
+    // const { id } = req.params;
+    // try {
+    //     const success = await deleteSuperAdminService(id);
+    //     if (!success) {
+    //         return res.status(404).json({ message: "SuperAdmin not found" });
+    //     }
+    //     res.status(200).json({ message: "SuperAdmin deleted successfully" });
+    // } catch (error: any) {
+    //     if(error.message === 'not found' || error.message === 'invalid'){
+    //         res.status(404).json({ message: "Super Admin not found" });
+    //     }else{
+    //         res.status(500).json({success: false, message: "Internal Server Error or Unexpected error"});
+    //     }
+    // }
 };

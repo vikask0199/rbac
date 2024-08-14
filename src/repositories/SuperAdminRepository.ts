@@ -1,5 +1,5 @@
 import { AppDataSource } from "../config/dbConfig";
-import { ISuperAdminRequest } from "../interfaces/ISuperAdmin";
+import { ISuperAdminRequest, ISuperAdminResponse, ISuperAdminUpdateRequest } from "../interfaces/ISuperAdmin";
 import { SuperAdmin } from "../models/SuperAdmin";
 
 export const getSuperAdminRepository = async () => {
@@ -11,12 +11,12 @@ export const getSuperAdminRepository = async () => {
 
 export const checkAnyOneEmailExistIntoDB = async (data: ISuperAdminRequest): Promise<SuperAdmin | null> => {
     const repository = await getSuperAdminRepository();
-    const result =  await repository.findOne({
+    const result = await repository.findOne({
         where: [
-            {primaryEmail: data.primaryEmail},
-            {secondaryEmail: data.secondaryEmail},
-            {primaryEmail: data.secondaryEmail},
-            {secondaryEmail: data.primaryEmail},
+            { primaryEmail: data.primaryEmail },
+            { secondaryEmail: data.secondaryEmail },
+            { primaryEmail: data.secondaryEmail },
+            { secondaryEmail: data.primaryEmail },
         ]
     })
     return result;
@@ -33,40 +33,28 @@ export const findSuperAdminByEmail = async (email: string): Promise<SuperAdmin |
     });
 };
 
+export const getSuperAdminById = async (id: string): Promise<SuperAdmin | null> => {
+    const repository = await getSuperAdminRepository();
+    return await repository.findOneBy({ id: id });
+}
+
 export const createSuperAdminRepo = async (data: ISuperAdminRequest): Promise<SuperAdmin | null> => {
     const repository = await getSuperAdminRepository();
-
-    const existingSuperAdmin = await findSuperAdminByEmail(data.primaryEmail);
-    if (existingSuperAdmin) {
-        throw new Error('SuperAdmin with this email already exists');
-    }
-
-    return await repository.save(repository.create(data));
+    return await repository.save(data);
 };
 
-export const updateSuperAdminRepo = async (id: number, data: Partial<ISuperAdminRequest>): Promise<SuperAdmin | null> => {
+export const updateSuperAdminRepo = async (recordToUpdate: ISuperAdminUpdateRequest, validateData: Partial<ISuperAdminUpdateRequest>): Promise<SuperAdmin | null> => {
     const repository = await getSuperAdminRepository();
-    const recordToUpdate = await repository.findOneBy({ id });
-
-    if (!recordToUpdate) {
-        return null;
-    }
-
-    Object.assign(recordToUpdate, data);
+    Object.assign(recordToUpdate, validateData);
     return await repository.save(recordToUpdate);
 };
 
-export const getSuperAdminById = async (id: number): Promise<SuperAdmin | null> => {
-    const repository = await getSuperAdminRepository();
-    return await repository.findOneBy({ id });
-};
-
-export const getAllSuperAdmins = async (): Promise<SuperAdmin[]> => {
+export const getAllSuperAdminsRepo = async (): Promise<SuperAdmin[]> => {
     const repository = await getSuperAdminRepository();
     return await repository.find();
 };
 
-export const deleteSuperAdminRepo = async (id: number): Promise<boolean> => {
+export const deleteSuperAdminRepo = async (id: string): Promise<boolean> => {
     const repository = await getSuperAdminRepository();
     const deleteResult = await repository.delete(id);
     return deleteResult.affected !== 0;

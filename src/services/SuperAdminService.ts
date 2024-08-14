@@ -1,5 +1,7 @@
-import { ISuperAdminBasicResponse, ISuperAdminRequest, ISuperAdminResponse } from '../interfaces/ISuperAdmin';
-import { checkAnyOneEmailExistIntoDB, createSuperAdminRepo, deleteSuperAdminRepo, findSuperAdminByEmail, getAllSuperAdmins, getSuperAdminById, updateSuperAdminRepo } from '../repositories/SuperAdminRepository';
+import { validate as uuidValidate } from 'uuid';
+import { ISuperAdminRequest, ISuperAdminResponse, ISuperAdminUpdateRequest } from '../interfaces/ISuperAdmin';
+import { SuperAdmin } from '../models/SuperAdmin';
+import { checkAnyOneEmailExistIntoDB, createSuperAdminRepo, deleteSuperAdminRepo, getAllSuperAdminsRepo, getSuperAdminById, updateSuperAdminRepo } from '../repositories/SuperAdminRepository';
 
 /**
  * Creates a new SuperAdmin and checks if either the primary or secondary email already exists
@@ -25,29 +27,40 @@ import { checkAnyOneEmailExistIntoDB, createSuperAdminRepo, deleteSuperAdminRepo
  * 
  * @throws Error if either email exists in any column or if the creation of the SuperAdmin fails.
  */
-export const createSuperAdminService = async (data: ISuperAdminRequest): Promise<ISuperAdminBasicResponse> => {
+export const createSuperAdminService = async (data: ISuperAdminRequest): Promise<ISuperAdminResponse> => {
     const isEmailExist = await checkAnyOneEmailExistIntoDB(data)
     
     if(isEmailExist){
-        throw new Error('User or email already exists')
+        throw new Error('exists')
     }
     
     const newSuperAdmin = await createSuperAdminRepo(data);
-    if (!newSuperAdmin) throw new Error('SuperAdmin creation failed');
+    if (!newSuperAdmin) throw new Error('something');
 
     return {
         name: newSuperAdmin.name,
         primaryEmail: newSuperAdmin.primaryEmail,
+        secondaryEmail: newSuperAdmin.secondaryEmail,
+        isActive: newSuperAdmin.isActive,
+        role: newSuperAdmin.role,
+        createdAt: newSuperAdmin.createdAt,
+        updatedAt: newSuperAdmin.updatedAt
     };
 };
 
-export const updateSuperAdminService = async (id: number, data: Partial<ISuperAdminRequest>): Promise<ISuperAdminResponse | null> => {
-    const existingSuperAdmin = await findSuperAdminByEmail(data.primaryEmail || '');
-    if (existingSuperAdmin && existingSuperAdmin.id !== id) {
-        throw new Error('SuperAdmin with this email already exists');
+export const updateSuperAdminService = async (id: string, dataToUpdate: Partial<ISuperAdminUpdateRequest>): Promise<ISuperAdminResponse | null> => {
+    if (!uuidValidate(id)) {
+        throw new Error('invalid');
     }
+    const existingSuperAdmin = await getSuperAdminById(id);
 
-    const updatedSuperAdmin = await updateSuperAdminRepo(id, data);
+    if (!existingSuperAdmin) {
+        throw new Error('not found');
+    }
+    if(JSON.stringify(existingSuperAdmin) === JSON.stringify(dataToUpdate)){
+        throw new Error('No change detected');
+    }
+    const updatedSuperAdmin = await updateSuperAdminRepo(existingSuperAdmin, dataToUpdate);
     if (!updatedSuperAdmin) return null;
 
     return {
@@ -61,30 +74,32 @@ export const updateSuperAdminService = async (id: number, data: Partial<ISuperAd
     };
 };
 
-export const getSuperAdminService = async (id: number): Promise<ISuperAdminResponse | null> => {
-    const superAdmin = await getSuperAdminById(id);
-    if (!superAdmin) return null;
-
-    return {
-        name: superAdmin.name,
-        primaryEmail: superAdmin.primaryEmail,
-        secondaryEmail: superAdmin.secondaryEmail,
-        isActive: superAdmin.isActive,
-        role: superAdmin.role,
-        createdAt: superAdmin.createdAt,
-        updatedAt: superAdmin.updatedAt,
-    };
+export const getSuperAdminService = async (id: string): Promise<ISuperAdminResponse | null> => {
+    if (!uuidValidate(id)) {
+        throw new Error('invalid');
+    }
+    const superAdmin = await getSuperAdminService(id);
+    if (!superAdmin) {
+        throw new Error('not found');
+    }
+    return superAdmin
 };
 
-export const getAllSuperAdminsService = async (): Promise<ISuperAdminBasicResponse[]> => {
-    const superAdmins = await getAllSuperAdmins();
-    return superAdmins.map((sa) => ({
-        id: sa.id,
-        name: sa.name,
-        primaryEmail: sa.primaryEmail,
-    }));
+export const getAllSuperAdminsService = async (): Promise<SuperAdmin[]> => {
+    const superAdmins = await getAllSuperAdminsRepo();
+    if(superAdmins.length > 0) {
+        return superAdmins
+    }
+    throw new Error('No records found');
 };
 
-export const deleteSuperAdminService = async (id: number): Promise<boolean> => {
+export const deleteSuperAdminService = async (id: string): Promise<boolean> => {
+    if (!uuidValidate(id)) {
+        throw new Error('invalid');
+    }
+    const superAdmin = await getSuperAdminService(id);
+    if (!superAdmin) {
+        throw new Error('not found');
+    }
     return await deleteSuperAdminRepo(id);
 };

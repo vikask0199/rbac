@@ -4,9 +4,9 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class SuperAdmin {
 
     @PrimaryGeneratedColumn('uuid')
-    public id!: number;
+    public id!: string;
 
-    @Column({ unique: true })
+    @Column({ nullable: false })
     public name!: string;
 
     @Column({ unique: true })

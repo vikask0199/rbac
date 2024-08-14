@@ -1,9 +1,12 @@
 import express from 'express';
-import { createRoleController } from '../controllers/RoleController';
+// import { createRoleController, deleteRoleController, detachPermissionFromRoleController, updateRoleController } from '../controllers/RoleController';
 
 
 const router = express.Router();
 
-router.post("/create-role", createRoleController)
+// router.post('/roles', createRoleController);
+// router.put('/roles/:id', updateRoleController);
+// router.delete('/roles/:id', deleteRoleController);
+// router.patch('/roles/:roleId/permissions/:permissionId', detachPermissionFromRoleController);
 
 export default router

@@ -1,35 +1,34 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Role } from './Role';
-import { SuperAdmin } from './SuperAdmin';
 
 @Entity('suhora_users')
 export class User {
 
     @PrimaryGeneratedColumn('uuid')
-    id!: string;
+    public id!: string;
 
     @Column({ nullable: false })
-    name!: string;
+    public username!: string;
 
     @Column({ unique: true, nullable: false })
-    email!: string;
+    public userEmail!: string;
 
     @Column({ nullable: true })
-    password!: string;
+    public password!: string;
 
     @Column({ nullable: true, default: false })
-    isAccountActivated!: boolean;
+    public isAccountActivated!: boolean;
 
     @Column({ nullable: true })
-    createdBy!: string;
+    public createdBy!: string;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    createdAt!: Date;
+    public createdAt!: Date;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
-    updatedAt!: Date;
+    public updatedAt!: Date;
 
-    @ManyToMany(() => Role, (role) => role.users, { eager: true, cascade: true })
+    @ManyToMany(() => Role, (role) => role.users, { eager: false, cascade: true })
     @JoinTable({
         name: 'user_roles',
         joinColumn: {
@@ -41,6 +40,6 @@ export class User {
             referencedColumnName: 'id'
         }
     })
-    roles!: Role[];
+    public roles!: Role[];
     
 }

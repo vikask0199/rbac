@@ -1,51 +1,97 @@
 import { IRole, IUpdateRole } from '../interfaces/IRole';
 import { Role } from '../models/Role';
-import { findAllPermissions, getPermissionRepository, getRoleRepository } from '../repositories/PermissionRepository';
-import { createRole, deleteRole, findAllRoles, findRoleById } from '../repositories/RoleRepository';
+import { findAllPermissionsByNames } from '../repositories/PermissionRepository';
+import { checkRoleExistsRepo, createRoleRepo, deleteRoleByRoleNameRepo, findAllRolesRepo, findRoleByRoleNameRepo, getRoleRepository, updateRoleRepo } from '../repositories/RoleRepository';
+import { arraysEqual } from '../utils/arraysEqual';
 
-export const createRoleService = async (data: IRole): Promise<Role> => {
-    const role = new Role();
-    role.name = data.name;
-    role.createdBy = data.createdBy ? data.createdBy : '';
+export const createRoleService = async (roleData: IRole): Promise<Role> => {
+    const roleRepository = await getRoleRepository()
+    const roleNameInLowerCase = roleData.roleName.toLowerCase()
 
-    if (data.permissions) {
-        const permissions = await findAllPermissions();
-        role.permissions = permissions.filter(permission => data.permissions!.includes(permission.id));
+    const isRoleExist = await checkRoleExistsRepo(roleNameInLowerCase)
+    if(isRoleExist){
+        throw new Error('Role with the same name already exists.')
     }
 
-    return await createRole(role);
+    let permissions: string | any[] = [];
+
+    if (roleData.permissions && roleData.permissions.length > 0) {
+        permissions = await findAllPermissionsByNames(roleData.permissions)
+        if(permissions.length !== roleData.permissions.length){
+            throw new Error('One or more of the provided permissions do not exist.')
+        }
+    }
+
+    const newRole = roleRepository.create({
+        ...roleData,
+        roleName: roleNameInLowerCase,
+        permissions,
+    })
+
+    return await createRoleRepo(newRole)
 }
 
-export const getRoleByIdService = async (id: string): Promise<Role | null> => {
-    return await findRoleById(id);
+
+export const updateRoleService = async (roleName: string, roleData: IUpdateRole): Promise<Role | null> => {
+    const roleRepository = await getRoleRepository();
+    let role = await roleRepository.findOne({ where: { roleName } });
+
+    if (!role) {
+        throw new Error('Role not found');
+    }
+
+    const hasChanges = (
+        roleData.permissions && 
+        role.permissions && 
+        !arraysEqual(roleData.permissions, role.permissions)
+    );
+
+    if (!hasChanges) {
+        throw new Error('No changes detected');
+    }
+
+    if (roleData.permissions && roleData.permissions.length > 0) {
+        const permissions = await findAllPermissionsByNames(roleData.permissions);
+        if (permissions.length !== roleData.permissions.length) {
+            throw new Error('One or more permissions not found');
+        }
+        role.permissions = permissions;
+    }
+    // role = roleRepository.merge(role, {
+    //     roleName: roleData.roleName, 
+    //     createdBy: roleData.createdBy,
+    // });
+
+    return await updateRoleRepo(role);
+};
+
+
+
+export const getRoleByRoleName = async (roleName: string): Promise<Role | null> => {
+    const roleByName = await findRoleByRoleNameRepo(roleName);
+    if(!roleByName){
+        throw new Error('Role not found');
+    }
+    return roleByName 
 }
 
 export const getAllRolesService = async (): Promise<Role[]> => {
-    return await findAllRoles();
+    const allRole = await findAllRolesRepo();
+    if(!allRole){
+        throw new Error('No roles found');
+    }
+    return allRole
 }
 
-export const updateRoleService = async (data: IUpdateRole): Promise<Role | null> => {
-    const roleRepository = await getRoleRepository();
-    const permissionRepository = await getPermissionRepository();
 
-    const role = await roleRepository.findOne({ where: { id: data.id } });
-    if (!role) {
-        return null; 
+export const deleteRoleByRoleNameService = async (name: string): Promise<boolean> => {
+    const roleDetails = await findRoleByRoleNameRepo(name);
+    if(!roleDetails){
+        throw new Error('Role not found');
     }
-
-    if (data.permissions && data.permissions.length > 0) {
-        const permissions = await permissionRepository.findByIds(data.permissions);
-        role.permissions = permissions;
+    if(roleDetails && roleDetails.permissions && roleDetails.permissions.length > 0){
+        throw new Error('Cannot delete role because it is associated with one or more permissions.');
     }
-
-    if (data.name) role.name = data.name;
-    if (data.createdBy) role.createdBy = data.createdBy;
-
-    await roleRepository.save(role);
-
-    return role;
-};
-
-export const deleteRoleService = async (id: string): Promise<boolean> => {
-    return await deleteRole(id);
+    const result  = await deleteRoleByRoleNameRepo(roleDetails.roleName)
+    return result
 }

@@ -1,5 +1,5 @@
 import { AppDataSource } from "../config/dbConfig";
-import { ISuperAdminRequest, ISuperAdminResponse, ISuperAdminUpdateRequest } from "../interfaces/ISuperAdmin";
+import { ISuperAdminRequest, ISuperAdminUpdateRequest } from "../interfaces/ISuperAdmin";
 import { SuperAdmin } from "../models/SuperAdmin";
 
 export const getSuperAdminRepository = async () => {

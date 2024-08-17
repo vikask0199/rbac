@@ -1,4 +1,5 @@
 import { AppDataSource } from "../config/dbConfig";
+import { IUser } from "../interfaces/IUser";
 import { User } from "../models/User";
 
 
@@ -9,29 +10,34 @@ export const getUserRepository = async () => {
     return AppDataSource.getRepository(User);
 };
 
-export const findUserById = async (id: string): Promise<User | null> => {
+export const findUserByEmailRepo = async (userEmail: string): Promise<User | null> => {
     const repository = await getUserRepository();
-    return await repository.findOne({ where: { id }, relations: ['roles', 'superAdmin'] });
+    const result = await repository.findOne({
+        where: { userEmail },
+        relations: ['roles']
+    })
+    return result;
 };
 
-export const findAllUsers = async (): Promise<User[]> => {
+export const findAllUsersRepo = async (): Promise<User[]> => {
     const repository = await getUserRepository();
-    return await repository.find({ relations: ['roles', 'superAdmin'] });
+    const results = await repository.find()
+    return results;
 };
 
-export const createUser = async (userData: Partial<User>): Promise<User> => {
+export const createUserRepo = async (userData: Partial<User>): Promise<User> => {
     const repository = await getUserRepository();
-    const user = repository.create(userData);
-    return await repository.save(user);
+    const newUser = repository.save(userData)
+    return newUser;
 };
 
-export const updateUser = async (id: string, userData: Partial<User>): Promise<User | null> => {
+export const updateUserRepo = async (userData: Partial<User>): Promise<User | null> => {
     const repository = await getUserRepository();
-    await repository.update(id, userData);
-    return await findUserById(id);
+    const updateRecords = await repository.save(userData)
+    return updateRecords;
 };
 
-export const deleteUser = async (id: string): Promise<boolean> => {
+export const deleteUserRepo = async (id: string): Promise<boolean> => {
     const repository = await getUserRepository();
     const result = await repository.delete(id);
     return result.affected !== 0;

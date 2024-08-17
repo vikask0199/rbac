@@ -8,7 +8,7 @@ export class Role {
     public id!: string;
 
     @Column({ unique: true, nullable: false })
-    public name!: string;
+    public roleName!: string;
 
     @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     public createdAt!: Date;
@@ -19,7 +19,7 @@ export class Role {
     @Column({nullable: true})
     public createdBy!: string;
 
-    @ManyToMany(() => Permission, (permission) => permission.roles, { eager: true, cascade: true })
+    @ManyToMany(() => Permission, (permission) => permission.roles, { eager: false, cascade: true })
     @JoinTable({
         name: 'role_permissions',
         joinColumn: {

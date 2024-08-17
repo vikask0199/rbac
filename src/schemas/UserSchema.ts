@@ -1,19 +1,38 @@
 import { z } from 'zod';
 import "zod-openapi/extend"
+import { isValidName, isValidRoleAndPermission } from '../utils/zodHelper';
 
 export const createUserSchema = z.object({
-    name: z.string().min(1).openapi({example: "Harsh M"}),
-    email: z.string().email("Invalid email address"),
-    password: z.string().optional(),
-    isAccountActivated: z.boolean().optional(),
-    createdBy: z.string().optional(),
-    roles: z.array(z.string().uuid()).optional(),
-    superAdminId: z.string().uuid().optional(),
-    dob: z.string().datetime().optional()
+    username: z.string().min(3, "Min 3 character").max(30, "Max 30 character").refine(
+        isValidName, {
+        message: "Name must only contain alphabets and spaces"
+    }).optional().openapi({ example: "" }),
+    userEmail: z.string().email("Invalid email address"),
+    password: z.string(),
+    roles: z.array(z.string().toLowerCase().refine(
+        isValidRoleAndPermission,
+        {
+            message: "Name must only contain alphabets and dash(-)"
+        }
+    )).optional(),
 });
 
 export type example = z.infer<typeof createUserSchema>
 
-export const updateUserSchema = createUserSchema.partial().extend({
-    id: z.string().uuid("Invalid User ID")
+export const updateUserSchema = z.object({
+    id: z.string().uuid("Invalid User ID"),
+    userEmail: z.string().email("Invalid email address"),
+    username: z.string(),
+    password: z.string(),
+    roles: z.array(z.string().toLowerCase().refine(
+        isValidRoleAndPermission,
+        {
+            message: "Name must only contain alphabets and dash(-)"
+        }
+    )).optional(),
 });
+
+
+export const deleteUserSchema = z.object ({
+    userEmail: z.string().email("Invalid email address"),
+})

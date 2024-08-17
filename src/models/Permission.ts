@@ -7,7 +7,7 @@ export class Permission {
     public id!: string;
 
     @Column({ unique: true, nullable: false })
-    public name!: string;
+    public permissionName!: string;
 
     @Column({ nullable: true })
     public createdBy!: string;
@@ -18,6 +18,6 @@ export class Permission {
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     public updatedAt!: Date;
 
-    @ManyToMany(() => Role, (role) => role.permissions,{nullable: true})
+    @ManyToMany(() => Role, (role) => role.permissions, {nullable: true})
     public roles!: Role[];
 }

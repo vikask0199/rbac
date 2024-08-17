@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { SuperAdminSchema, SuperAdminUpdateSchema } from '../schemas/SuperAdminSchema';
-import { createSuperAdminService, deleteSuperAdminService, getAllSuperAdminsService, getSuperAdminService, updateSuperAdminService } from '../services/SuperAdminService';
 import { ISuperAdminRequest, ISuperAdminUpdateRequest } from '../interfaces/ISuperAdmin';
+import { SuperAdminSchema, SuperAdminUpdateSchema } from '../schemas/SuperAdminSchema';
+import { createSuperAdminService, getAllSuperAdminsService, getSuperAdminService, updateSuperAdminService } from '../services/SuperAdminService';
 
 export const createSuperAdminController = async (req: Request<{}, {}, ISuperAdminRequest>, res: Response) => {
     try {

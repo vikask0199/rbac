@@ -1,7 +1,6 @@
+import { In } from "typeorm";
 import { AppDataSource } from "../config/dbConfig";
-import { Permission } from "../models/Permission";
 import { Role } from "../models/Role";
-
 
 
 export const getRoleRepository = async () => {
@@ -11,49 +10,64 @@ export const getRoleRepository = async () => {
     return AppDataSource.getRepository(Role);
 }
 
-export const getPermissionRepository = async () => {
-    if (!AppDataSource.isInitialized) {
-        await AppDataSource.initialize();
-    }
-    return AppDataSource.getRepository(Permission);
-}
-
-export const createRole = async (role: Role): Promise<Role> => {
+export const createRoleRepo = async (role: Role): Promise<Role> => {
     const repository = await getRoleRepository();
     return await repository.save(role);
 }
 
-export const findRoleById = async (id: string): Promise<Role | null> => {
+
+export const updateRoleRepo = async (role: Role): Promise<Role | null> => {
     const repository = await getRoleRepository();
-    return await repository.findOne({ where: { id }, relations: ['permissions'] });
+    const updatedRole = await repository.save(role);
+    return updatedRole; 
 }
 
-export const findAllRoles = async (): Promise<Role[]> => {
+export const checkRoleExistsRepo = async (name: string): Promise<Role | null> => {
+    const repository = await getRoleRepository();
+    return await repository.findOne({ 
+        where: { 
+            roleName: name,
+        }, 
+        relations: ['permissions']
+    });
+}
+
+export const findRoleByRoleNameRepo = async (name: string): Promise<Role | null> =>{
+    if (!name) {
+        throw new Error('Role name is required');
+    }
+
+    const repository = await getRoleRepository();
+    const lowerCaseName = name.toLowerCase();
+
+    return await repository.findOne({
+        where: {
+            roleName: lowerCaseName
+        },
+        relations: ['permissions']
+    });
+}
+
+export const findAllRolesRepo = async (): Promise<Role[]> => {
     const repository = await getRoleRepository();
     return await repository.find({ relations: ['permissions'] });
 }
 
-export const updateRole = async (id: string, updatedData: Partial<Role>): Promise<Role | null> => {
+
+export const deleteRoleByRoleNameRepo = async (roleName: string): Promise<boolean> => {
     const repository = await getRoleRepository();
-    let role = await repository.findOne({ where: { id } });
-
-    if (!role) {
-        return null;
-    }
-
-    role = repository.merge(role, updatedData);
-    return await repository.save(role);
+    const result = await repository.delete({ roleName }); 
+    return result.affected !== 0;
 }
 
-export const deleteRole = async (id: string): Promise<boolean> => {
+
+export const findAllRolesByNameRepo = async(roles: string[]): Promise<Role[]> =>{
     const repository = await getRoleRepository();
-    const role = await repository.findOne({ where: { id }, relations: ['permissions'] });
-
-
-    if (role && role.permissions && role.permissions.length > 0) {
-        throw new Error('Cannot delete role because it is associated with one or more permissions.');
-    }
-
-    const result = await repository.delete(id);
-    return result.affected !== 0;
+    console.log(roles, "repositories")
+    const findAllRolesByNameRepos = await repository.find({
+        where:{
+            roleName: In(roles)
+        }
+    })
+    return findAllRolesByNameRepos;
 }

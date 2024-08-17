@@ -1,13 +1,16 @@
 export interface IPermission {
     id?: string;
-    name: string;
+    permissionName: string;
     createdBy?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    roles?: string[];
 }
 
-export interface IUpdatePermission {
-    id: string;
-    name?: string;
-    createdBy?: string;
+export interface IUpdatePermissionName {
+    permissionName: string;
+}
+
+export interface IUpdatePermissionRole {
+    roles: string[];
 }

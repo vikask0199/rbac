@@ -1,28 +1,29 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-     "types": ["node"],
-     "lib": [
-        "es2020"
-     ],
-     "target": "ES6",
-     "module": "commonjs",
-     "outDir": "./dist",
-     "strict": true,
-     "skipLibCheck": true,
-     "sourceMap": true,
-     "emitDecoratorMetadata": true,
-     "experimentalDecorators": true,
-     "esModuleInterop": true
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2020"
+    ],
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
-     "lib/**/*.ts",
-     "src/**/*.ts"
+    "lib/**/*.ts",
+    "src/**/*.ts"
   ],
   "exclude": [
-     "node_modules"
-  ],
-  "typeRoots": [
-     "../node_modules/@types/index.d.ts"
+    "node_modules"
   ]
 }
